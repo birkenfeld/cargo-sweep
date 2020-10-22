@@ -193,6 +193,8 @@ fn main() {
 
         let dry_run = matches.is_present("dry-run");
 
+        let mut total_cleaned = 0;
+
         // Default to current invocation path.
         let path = match matches.value_of("path") {
             Some(p) => PathBuf::from(p),
@@ -239,12 +241,17 @@ fn main() {
             for project_path in &paths {
                 match remove_not_built_with(project_path, matches.value_of("toolchains"), dry_run) {
                     Ok(cleaned_amount) if dry_run => {
+                        total_cleaned += cleaned_amount;
                         info!("Would clean: {}", format_bytes(cleaned_amount))
                     }
-                    Ok(cleaned_amount) => info!("Cleaned {}", format_bytes(cleaned_amount)),
+                    Ok(cleaned_amount) => {
+                        total_cleaned += cleaned_amount;
+                        info!("Cleaned {}", format_bytes(cleaned_amount))
+                    }
                     Err(e) => error!("Failed to clean {:?}: {}", project_path, e),
                 };
             }
+            info!("Total amount: {}", format_bytes(total_cleaned));
 
             return;
         }
@@ -265,12 +272,18 @@ fn main() {
             for project_path in &paths {
                 match remove_older_until_fits(project_path, size, dry_run) {
                     Ok(cleaned_amount) if dry_run => {
+                        total_cleaned += cleaned_amount;
                         info!("Would clean: {}", format_bytes(cleaned_amount))
                     }
-                    Ok(cleaned_amount) => info!("Cleaned {}", format_bytes(cleaned_amount)),
+                    Ok(cleaned_amount) => {
+                        total_cleaned += cleaned_amount;
+                        info!("Cleaned {}", format_bytes(cleaned_amount))
+                    }
                     Err(e) => error!("Failed to clean {:?}: {}", project_path, e),
                 };
             }
+
+            info!("Total amount: {}", format_bytes(total_cleaned));
 
             return;
         }
@@ -278,11 +291,17 @@ fn main() {
         for project_path in &paths {
             match remove_older_then(project_path, &keep_duration, dry_run) {
                 Ok(cleaned_amount) if dry_run => {
+                    total_cleaned += cleaned_amount;
                     info!("Would clean: {}", format_bytes(cleaned_amount))
                 }
-                Ok(cleaned_amount) => info!("Cleaned {}", format_bytes(cleaned_amount)),
+                Ok(cleaned_amount) => {
+                    total_cleaned += cleaned_amount;
+                    info!("Cleaned {}", format_bytes(cleaned_amount))
+                }
                 Err(e) => error!("Failed to clean {:?}: {}", project_path, e),
             };
         }
+
+        info!("Total amount: {}", format_bytes(total_cleaned));
     }
 }
